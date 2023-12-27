@@ -1,0 +1,52 @@
+[
+  {
+    "model": "catalog.product",
+    "pk": 1,
+    "fields": {
+      "product_name": "Iphone",
+      "product_description": "Телефон",
+      "product_image": "",
+      "category": 1,
+      "price": 15,
+      "creation_date": "2023-12-24T16:06:32.665Z",
+      "last_modified_date": "2023-12-24T16:07:37.835Z"
+    }
+  },
+  {
+    "model": "catalog.product",
+    "pk": 2,
+    "fields": {
+      "product_name": "MacBook",
+      "product_description": "Ноутбук",
+      "product_image": "",
+      "category": 2,
+      "price": 25,
+      "creation_date": "2023-12-24T16:07:13.520Z",
+      "last_modified_date": "2023-12-24T16:07:13.520Z"
+    }
+  },
+  {
+    "model": "catalog.category",
+    "pk": 1,
+    "fields": {
+      "category_name": "Телефон",
+      "category_description": "Описание"
+    }
+  },
+  {
+    "model": "catalog.category",
+    "pk": 2,
+    "fields": {
+      "category_name": "Компьютер",
+      "category_description": "Ноутбук"
+    }
+  },
+  {
+    "model": "catalog.category",
+    "pk": 3,
+    "fields": {
+      "category_name": "Телевизор",
+      "category_description": "Смарт-ТВ"
+    }
+  }
+]
