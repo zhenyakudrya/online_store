@@ -30,3 +30,15 @@ def category_products(requests, pk):
         'title': f'Все наши {category_item.category_name}'
     }
     return render(requests, 'catalog/category_products.html', context)
+
+
+def product(requests, id):
+    product = Product.objects.get(id=id)
+    context = {
+        'product_name': product.product_name,
+        'product_content': product.product_content,
+        'title': 'Выбранный товар',
+        'product_image': product.product_image,
+        'price_for_one': f'Цена: {product.price_for_one} руб.'
+    }
+    return render(requests, 'catalog/product.html', context)
