@@ -1,0 +1,22 @@
+{% extends 'catalog/base.html' %}
+
+{% block content%}
+<div class="row">
+    <div class="col-md-4">
+        <div class="card mb-4 box-shadow">
+            <div class="card-body">
+                <p class="card-text">Название статьи {{ object.tittle }} ({{ object.slug }})</p>
+                <p class="card-text">Описание:</p>
+                <p class="card-text">{{ object.content }}</p>
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="btn-group">
+                    </div>
+                </div>
+                <div class="card-footer">
+                    Просмотры: {{ object.views_count }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
