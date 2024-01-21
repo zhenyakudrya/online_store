@@ -1,7 +1,10 @@
+from django.forms import inlineformset_factory
 from django.shortcuts import render
-from django.views.generic import ListView, DetailView
+from django.urls import reverse_lazy, reverse
+from django.views.generic import ListView, DetailView, CreateView, UpdateView
 
-from catalog.models import Category, Product
+from catalog.forms import ProductForm, VersionForm
+from catalog.models import Category, Product, Version
 
 
 def contacts(requests):
@@ -9,10 +12,15 @@ def contacts(requests):
 
 
 class ProductsListView(ListView):
-    model = Product
+    model = Category
     extra_context = {
         'title': 'Наш ассортимент'
     }
+
+    def get_context_data(self, **kwargs):
+        context_data = super().get_context_data(**kwargs)
+        context_data['object_list'] = Category.objects.all()[:3]
+        return context_data
 
 
 class CategoryListView(ListView):
@@ -32,23 +40,11 @@ class CategoryProductsListView(ListView):
 
     def get_context_data(self, *args, **kwargs):
         context_data = super().get_context_data(*args, **kwargs)
-
         category_item = Category.objects.get(pk=self.kwargs.get('pk'))
+        context_data['category_pk'] = category_item.pk
         context_data['title'] = f'Все наши {category_item.category_name}'
 
         return context_data
-
-
-# def product(requests, id):
-#     product = Product.objects.get(id=id)
-#     context = {
-#         'product_name': product.product_name,
-#         'product_content': product.product_content,
-#         'title': 'Выбранный товар',
-#         'product_image': product.product_image,
-#         'price_for_one': f'Цена: {product.price_for_one} руб.'
-#     }
-#     return render(requests, 'catalog/product.html', context)
 
 
 class ProductDetailView(DetailView):
@@ -62,7 +58,6 @@ class ProductDetailView(DetailView):
 
     def get_context_data(self, *args, **kwargs):
         context_data = super().get_context_data(*args, **kwargs)
-
         product = Product.objects.get(id=self.kwargs.get('pk'))
         context_data['product_name'] = product.product_name
         context_data['product_content'] = product.product_content
@@ -71,3 +66,37 @@ class ProductDetailView(DetailView):
         context_data['price_for_one'] = f'Цена: {product.price_for_one} руб.'
 
         return context_data
+
+
+class ProductCreateView(CreateView):
+    model = Product
+    form_class = ProductForm
+    success_url = reverse_lazy('catalog:index')
+
+
+class ProductUpdateView(UpdateView):
+    model = Product
+    form_class = ProductForm
+
+    def get_success_url(self):
+        return reverse('catalog:product', args=[self.kwargs.get('pk')])
+
+    def get_context_data(self, **kwargs):
+        context_data = super().get_context_data(**kwargs)
+        VersionFormset = inlineformset_factory(Product, Version, form=VersionForm, extra=1)
+        if self.request.method == 'POST':
+            formset = VersionFormset(self.request.POST, instance=self.object)
+        else:
+            formset = VersionFormset(instance=self.object)
+
+        context_data['formset'] = formset
+        return context_data
+
+    def form_valid(self, form):
+        context_data = self.get_context_data()
+        formset = context_data['formset']
+        self.object = form.save()
+        if formset.is_valid():
+            formset.instance = self.object
+            formset.save()
+        return super().form_valid(form)
