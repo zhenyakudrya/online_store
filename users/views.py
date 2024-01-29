@@ -1,6 +1,8 @@
 import random
 
 from django.conf import settings
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.mail import send_mail
 from django.shortcuts import redirect, render
 from django.urls import reverse_lazy, reverse
@@ -11,7 +13,7 @@ from users.forms import UserRegisterForm, UserProfileForm
 from users.models import User
 
 
-class RegisterView(CreateView):
+class RegisterView(LoginRequiredMixin, CreateView):
     model = User
     form_class = UserRegisterForm
     template_name = 'users/register.html'
@@ -32,7 +34,7 @@ class RegisterView(CreateView):
         return super().form_valid(form)
 
 
-class ProfileView(UpdateView):
+class ProfileView(LoginRequiredMixin, UpdateView):
     model = User
     form_class = UserProfileForm
     success_url = reverse_lazy('users:profile')
@@ -41,6 +43,7 @@ class ProfileView(UpdateView):
         return self.request.user
 
 
+@login_required
 def generate_new_password(request):
     new_password = ''.join([str(random.randint(0, 9)) for _ in range(12)])
     send_mail(
@@ -54,7 +57,7 @@ def generate_new_password(request):
     return redirect(reverse('catalog:index'))
 
 
-class CodeView(View):
+class CodeView(LoginRequiredMixin, View):
     model = User
     template_name = 'users/verify_code.html'
 

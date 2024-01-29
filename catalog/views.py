@@ -1,3 +1,5 @@
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.forms import inlineformset_factory
 from django.http import Http404
 from django.shortcuts import render
@@ -8,6 +10,7 @@ from catalog.forms import ProductForm, VersionForm
 from catalog.models import Category, Product, Version
 
 
+@login_required
 def contacts(requests):
     return render(requests, 'catalog/contacts.html')
 
@@ -34,10 +37,16 @@ class CategoryListView(ListView):
 class CategoryProductsListView(ListView):
     model = Product
 
+    # def get_queryset(self):
+    #     queryset = super().get_queryset()
+    #     queryset = queryset.filter(category_id=self.kwargs.get('pk'))
+    #     return queryset
+
     def get_queryset(self):
-        queryset = super().get_queryset()
-        queryset = queryset.filter(category_id=self.kwargs.get('pk'))
-        return queryset
+        return super().get_queryset().filter(
+            category_id=self.kwargs.get('pk'),
+            user=self.request.user
+        )
 
     def get_context_data(self, *args, **kwargs):
         context_data = super().get_context_data(*args, **kwargs)
@@ -69,7 +78,7 @@ class ProductDetailView(DetailView):
         return context_data
 
 
-class ProductCreateView(CreateView):
+class ProductCreateView(LoginRequiredMixin, CreateView):
     model = Product
     form_class = ProductForm
     success_url = reverse_lazy('catalog:index')
@@ -82,9 +91,19 @@ class ProductCreateView(CreateView):
         return super().form_valid(form)
 
 
-class ProductUpdateView(UpdateView):
+class ProductUpdateView(LoginRequiredMixin, UpdateView):
     model = Product
     form_class = ProductForm
+
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        if self.object.user != self.request.user:
+            product_fields = [fields_key for fields_key in form.fields.key()]
+            for field in product_fields:
+                if not self.request.user.has_perm(f'catalog.set_{field}'):
+                    del form.fields[field]
+
+        return form
 
     def get_object(self, queryset=None):
         self.object = super().get_object(queryset)

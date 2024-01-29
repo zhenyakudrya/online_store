@@ -12,7 +12,7 @@ class Product(models.Model):
     price_for_one = models.IntegerField(verbose_name='цена')
     date_created = models.DateTimeField(auto_now_add=True)
     date_last_change = models.DateTimeField(auto_now=True)
-
+    is_published = models.BooleanField(default=False)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, **NULLABLE, verbose_name='пользователь')
 
     def __str__(self):
@@ -21,6 +21,12 @@ class Product(models.Model):
     class Meta:
         verbose_name = 'продукт'
         verbose_name_plural = 'продукты'
+
+        permissions = [
+            ('set_is_published', 'Может публиковать товары'),
+            ('set_product_content', 'Может менять описание'),
+            ('set_category', 'Может менять категорию'),
+        ]
 
 
 class Category(models.Model):
