@@ -1,5 +1,7 @@
+from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.cache import cache
 from django.forms import inlineformset_factory
 from django.http import Http404
 from django.shortcuts import render
@@ -8,6 +10,7 @@ from django.views.generic import ListView, DetailView, CreateView, UpdateView
 
 from catalog.forms import ProductForm, VersionForm
 from catalog.models import Category, Product, Version
+from catalog.services import get_categories_cache
 
 
 @login_required
@@ -29,6 +32,9 @@ class ProductsListView(ListView):
 
 class CategoryListView(ListView):
     model = Category
+
+    get_categories_cache()
+
     extra_context = {
         'title': 'Все категории техники'
     }
@@ -36,11 +42,6 @@ class CategoryListView(ListView):
 
 class CategoryProductsListView(ListView):
     model = Product
-
-    # def get_queryset(self):
-    #     queryset = super().get_queryset()
-    #     queryset = queryset.filter(category_id=self.kwargs.get('pk'))
-    #     return queryset
 
     def get_queryset(self):
         return super().get_queryset().filter(
